@@ -20,9 +20,10 @@ import kps.util.XMLFormatException;
 
 public class MailSteps {
 
+private String fname = System.getProperty("os.name").contains("Windows") ? "NUL/" : "/dev/null";
+
 BusinessFigures figures = new BusinessFigures();
-// KPSServer server = new KPSServer("/dev/null", figures);
-KPSServer server = new KPSServer("NUL/", figures);
+KPSServer server = new KPSServer(fname, figures);
 int weight;
 int measure;
 String fromCity;
