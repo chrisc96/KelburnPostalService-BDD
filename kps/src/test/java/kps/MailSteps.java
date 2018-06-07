@@ -5,6 +5,7 @@ import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import kps.server.*;
 import kps.util.MailPriority;
+import kps.util.RouteNotFoundException;
 import org.junit.Assert;
 
 
@@ -64,6 +65,7 @@ public class MailSteps {
         Destination to = new Destination(toCity, toCountry);
         Destination from = new Destination(fromCity, fromCountry);
         Mail mail = new Mail(to, from, priorityType, weight, measure);
+
         TransportRoute route = server.getTransportMap().calculateRoute(mail).get(0);
 
         double actual = route.calculateCost(mail.weight, mail.volume);
@@ -72,11 +74,56 @@ public class MailSteps {
         Assert.assertTrue(msg, expectedCost == actual);
     }
 
-    @Given("^a route exists for this mail$")
+    @Then("^a route exists for this mail$")
     public void thisRouteExists() throws Throwable {
         Destination to = new Destination(toCity, toCountry);
         Destination from = new Destination(fromCity, fromCountry);
         Mail mail = new Mail(to, from, priorityType, weight, measure);
         Assert.assertTrue("This route does not exist", server.getTransportMap().calculateRoute(mail).size() != 0);
+    }
+
+
+    @Then("^does a route exist for this route$")
+    public void doesARouteExistForThisRoute() throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+        Mail mail = new Mail(to, from, priorityType, weight, measure);
+
+        boolean routeExists;
+        try {
+            routeExists = server.getTransportMap().calculateRoute(mail).size() != 0;
+        }
+        catch (RouteNotFoundException | NullPointerException e) {
+            routeExists = false;
+        }
+        String msg = "This route from " + fromCity + " to " + toCity + " doesn't exist";
+        Assert.assertTrue(msg, routeExists);
+    }
+
+    @Then("^does a route not exist for this route$")
+    public void doesARouteNottxistForThisRoute() throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+        Mail mail = new Mail(to, from, priorityType, weight, measure);
+
+        boolean routeDoesntExist = false;
+        try {
+            routeDoesntExist = server.getTransportMap().calculateRoute(mail).size() == 0;
+        }
+        // Null pointer thrown in calculate route - can't be a route.
+        catch (NullPointerException e) {
+            routeDoesntExist = true;
+        }
+        finally {
+            String msg = "This route from " + fromCity + " to " + toCity + " does exist";
+            Assert.assertTrue(msg, routeDoesntExist);
+        }
+    }
+
+	@And("^\"([^\"]*)\" \"([^\"]*)\" distribution centre exists$")
+	public void distributionCentreExists(String city, String country) {
+        Destination to = new Destination(city, country);
+        String msg = "The distribution centre " + city + ", " + country + " doesn't exist";
+        Assert.assertNotNull(msg, server.getTransportMap().getDestination(to));
     }
 }

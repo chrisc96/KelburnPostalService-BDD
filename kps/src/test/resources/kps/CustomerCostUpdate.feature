@@ -1,0 +1,1 @@
+Feature: Testing price changes for customers
