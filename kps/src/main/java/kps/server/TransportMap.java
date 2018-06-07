@@ -392,7 +392,7 @@ public class TransportMap {
 			Collections.reverse(routesToDestination);
 			return routesToDestination;
 		}
-		throw new RouteNotFoundException("No route from "+from+" to "+to);
+		throw new RouteNotFoundException("No route from "+from+" to "+ to);
 	}
 
 	public SearchNode getSearchNodeFromDestination(Set<SearchNode> nodes, Destination d){

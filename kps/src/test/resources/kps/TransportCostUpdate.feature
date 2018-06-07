@@ -1,0 +1,1 @@
+Feature: Testing opening new routes and current route updating
