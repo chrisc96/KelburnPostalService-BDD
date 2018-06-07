@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/kps.iml" filepath="$PROJECT_DIR$/kps.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/kps_main.iml" filepath="$PROJECT_DIR$/.idea/modules/kps_main.iml" group="kps" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/kps_test.iml" filepath="$PROJECT_DIR$/.idea/modules/kps_test.iml" group="kps" />
+    </modules>
+  </component>
+</project>

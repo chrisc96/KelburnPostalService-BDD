@@ -1,77 +1,82 @@
 package kps;
-import cucumber.api.java.en.*;
 import cucumber.api.PendingException;
-
-import org.junit.Assert;
-
-import kps.server.BusinessFigures;
-import kps.server.Destination;
-import kps.server.KPSServer;
-import kps.server.Mail;
-import kps.server.TransportRoute;
-import kps.server.UserRecord;
-import kps.server.UserRecord.Role;
-import kps.server.logs.LogItem;
-import kps.server.logs.MailDelivery;
+import cucumber.api.java.en.And;
+import cucumber.api.java.en.Given;
+import cucumber.api.java.en.Then;
+import kps.server.*;
 import kps.util.MailPriority;
-import kps.util.RouteNotFoundException;
-import kps.util.XMLFormatException;
+import org.junit.Assert;
 
 
 public class MailSteps {
 
-private String fname = System.getProperty("os.name").contains("Windows") ? "NUL/" : "/dev/null";
+    private String fname = System.getProperty("os.name").contains("Windows") ? "NUL/" : "/dev/null";
 
-BusinessFigures figures = new BusinessFigures();
-KPSServer server = new KPSServer(fname, figures);
-int weight;
-int measure;
-String fromCity;
-String fromCountry;
-String toCity;
-String toCountry;
-double cost;		
+    BusinessFigures figures = new BusinessFigures();
+    KPSServer server = new KPSServer(fname, figures);
 
-@Given("^an initial map$")
-public void anInitialMap() throws Throwable {
-    server.readInitialLog("data/data.xml");   
-}
+    // All mail should have these properties common, so lets define them and set them in steps definitions.
+    double weight;
+    double measure;
+    String fromCity;
+    String fromCountry;
+    String toCity;
+    String toCountry;
+    MailPriority priorityType;
+    double cost;
 
-@Given("^a parcel that weighs (\\d+)kg$")
-public void aParcelThatWeighsKg(int weight) throws Throwable {
-    this.weight = weight;
-}
+    @Given("^an initial map$")
+    public void anInitialMap() throws Throwable {
+        server.readInitialLog("data/data.xml");
+    }
 
-@Given("^a parcel that measures (\\d+) cc$")
-public void aParcelThatMeasuresCc(int measure) throws Throwable {
-    this.measure = measure;
-}
+    @Given("^a parcel that weighs (\\d+)kg$")
+    public void aParcelThatWeighsKg(int weight) {
+        this.weight = weight;
+    }
 
-@Given("^I send the parcel from \"([^\"]*)\" \"([^\"]*)\"$")
-public void iSendTheParcelFrom(String fromCity, String fromCountry) throws Throwable {
-    this.fromCity = fromCity;
-    this.fromCountry = fromCountry;
-}
+    @Given("^a parcel that measures (\\d+) cc$")
+    public void aParcelThatMeasuresCc(int measure) {
+        this.measure = measure / 1000;
+    }
 
-@Given("^I send the parcel to \"([^\"]*)\" \"([^\"]*)\"$")
-public void iSendTheParcelTo(String toCity, String toCountry) throws Throwable {
-    this.toCity = toCity;
-    this.toCountry = toCountry;
-}
+    @Given("^I send the parcel from \"([^\"]*)\" \"([^\"]*)\"$")
+    public void iSendTheParcelFrom(String fromCity, String fromCountry) {
+        this.fromCity = fromCity;
+        this.fromCountry = fromCountry;
+    }
 
-@Given("^I send the parcel by domestic standard mail$")
-public void iSendTheParcelByDomesticStandardMail() throws Throwable {
-}
+    @Given("^I send the parcel to \"([^\"]*)\" \"([^\"]*)\"$")
+    public void iSendTheParcelTo(String toCity, String toCountry) {
+        this.toCity = toCity;
+        this.toCountry = toCountry;
+    }
 
-@Then("^the cost is \\$(\\d+)$")
-public void theCostIs$(int expectedCost) throws Throwable {
-Destination to = new Destination("Palmerston North", "New Zealand");
-Destination from = new Destination("Wellington", "New Zealand");
-Mail mail = new Mail(to, from, MailPriority.DOMESTIC_STANDARD, 1.0, 1.0);
-TransportRoute route = server.getTransportMap().calculateRoute(mail).get(0);
-Assert.assertTrue(expectedCost == route.calculateCost(mail.weight, mail.volume));
-}
+    @And("^I send the parcel by \"([^\"]*)\"$")
+    public void iSendTheParcelBy(String priority) throws Throwable {
+        MailPriority type = MailPriority.fromString(priority);
+        Assert.assertNotNull("MailPriority type is invalid", type);
+        priorityType = type;
+    }
 
+    @Then("^the cost is \\$(\\d+)$")
+    public void theCostIs$(double expectedCost) throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+        Mail mail = new Mail(to, from, priorityType, weight, measure);
+        TransportRoute route = server.getTransportMap().calculateRoute(mail).get(0);
 
+        double actual = route.calculateCost(mail.weight, mail.volume);
 
+        String msg = "The expected cost was " + expectedCost + " but the actual cost was " + actual;
+        Assert.assertTrue(msg, expectedCost == actual);
+    }
+
+    @Given("^a route exists for this mail$")
+    public void thisRouteExists() throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+        Mail mail = new Mail(to, from, priorityType, weight, measure);
+        Assert.assertTrue("This route does not exist", server.getTransportMap().calculateRoute(mail).size() != 0);
+    }
 }

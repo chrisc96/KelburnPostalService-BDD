@@ -1,3 +1,4 @@
+
 package kps.util;
 
 /**
@@ -8,7 +9,6 @@ public enum MailPriority {
     INTERNATIONAL_STANDARD,
     DOMESTIC_AIR,
     DOMESTIC_STANDARD;
-
     public static MailPriority fromString(String s) {
     	s = s.toLowerCase();
         switch (s) {
