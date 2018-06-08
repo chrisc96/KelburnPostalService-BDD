@@ -329,7 +329,6 @@ public class TransportMap {
 		return (currentTime - startTime);
 	}
 	
-	
 
 	public Set<TransportRoute> getTransportRoutes() {
 		return this.transportRoutes;
