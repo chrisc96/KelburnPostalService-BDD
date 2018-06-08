@@ -8,6 +8,9 @@ import kps.util.MailPriority;
 import kps.util.RouteNotFoundException;
 import org.junit.Assert;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class MailSteps {
 
@@ -74,12 +77,30 @@ public class MailSteps {
         Assert.assertTrue(msg, expectedCost == actual);
     }
 
-    @Then("^a route exists for this mail$")
+    @Given("^a route exists for this mail$")
     public void thisRouteExists() throws Throwable {
         Destination to = new Destination(toCity, toCountry);
         Destination from = new Destination(fromCity, fromCountry);
         Mail mail = new Mail(to, from, priorityType, weight, measure);
         Assert.assertTrue("This route does not exist", server.getTransportMap().calculateRoute(mail).size() != 0);
+    }
+
+    @Then("^as part of this route I stop off in \"([^\"]*)\" \"([^\"]*)\"$")
+    public void asPartOfThisRouteIStopOffIn(String city, String country) throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+        Mail mail = new Mail(to, from, priorityType, weight, measure);
+        List<TransportRoute> routes = server.getTransportMap().calculateRoute(mail);
+
+        boolean foundIntermediatary = false;
+        for (TransportRoute route: routes) {
+            if (route.from.city.equals(city) && route.from.country.equals(country)) {
+                foundIntermediatary = true;
+            }
+        }
+
+        String msg = "This route doesn't go through " + city + " , " + country;
+        Assert.assertTrue(msg, foundIntermediatary);
     }
 
 
@@ -125,5 +146,30 @@ public class MailSteps {
         Destination to = new Destination(city, country);
         String msg = "The distribution centre " + city + ", " + country + " doesn't exist";
         Assert.assertNotNull(msg, server.getTransportMap().getDestination(to));
+    }
+
+    @And("^I want to send a parcel to the overseas country: \"([^\"]*)\"$")
+    public void iWantToSendAParcelTo(String country) throws Throwable {
+        toCountry = country;
+    }
+
+
+    @Then("^I should be only able to send it to one place$")
+    public void iShouldBeOnlyAbleToSendItToOnePlace() throws Throwable {
+        List<String> citiesInsideCountry = new ArrayList<>();
+        for (TransportRoute route : server.getTransportRoutes()) {
+            if (route.to.country.equalsIgnoreCase(toCountry)) {
+
+                if (!citiesInsideCountry.contains(route.to.city)) {
+                    citiesInsideCountry.add(route.to.city);
+                }
+            }
+        }
+        if (citiesInsideCountry.size() > 1) {
+            Assert.fail("You can send a parcel to more than one port in this overseas country.");
+        }
+        else if (citiesInsideCountry.size() == 0) {
+            Assert.fail("You can't send a parcel to this country at all.");
+        }
     }
 }

@@ -11,7 +11,7 @@ public class TransportRoute implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	public final TransportFirm owner;
-	public final Destination to; 
+	public final Destination to;
 	public final Destination from; // no guarantee this destination will have possible routes. Must refer to the destinations set in the map 
 	public final RouteType type;
 	public final double weightToCost;

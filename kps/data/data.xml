@@ -628,6 +628,19 @@
 <day>Monday</day>
 </cost>
 
+<cost><company>Super Airlines</company>
+<to>Place, Martin Island</to>
+<from>Auckland, New Zealand</from>
+<type>Air</type>
+<weightcost>35</weightcost>
+<volumecost>35</volumecost>
+<maxWeight>200</maxWeight>
+<maxVolume>200</maxVolume>
+<duration>24</duration>
+<frequency>36</frequency>
+<day>Monday</day>
+</cost>
+
 
 <cost><company>Kelburn Airways</company>
 <to>Auckland, New Zealand</to>
@@ -767,5 +780,69 @@
 <frequency>36</frequency>
 <day>Monday</day>
 </cost>
+
+<price>
+<from>Wellington, New Zealand</from>
+<to>Dunedin, New Zealand</to>
+<priority>Domestic Air</priority>
+<weightcost>10.0</weightcost>
+<volumecost>10.0</volumecost>
+</price>
+
+<price>
+<from>Wellington, New Zealand</from>
+<to>Dunedin, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>10.0</weightcost>
+<volumecost>10.0</volumecost>
+</price>
+
+<price>
+<from>Dunedin, New Zealand</from>
+<to>Wellington, New Zealand</to>
+<priority>Domestic Air</priority>
+<weightcost>10.0</weightcost>
+<volumecost>10.0</volumecost>
+</price>
+
+<price>
+<from>Dunedin, New Zealand</from>
+<to>Wellington, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>10.0</weightcost>
+<volumecost>10.0</volumecost>
+</price>
+
+<price>
+<from>Auckland, New Zealand</from>
+<to>Wellington, New Zealand</to>
+<priority>Domestic Air</priority>
+<weightcost>100.0</weightcost>
+<volumecost>100.0</volumecost>
+</price>
+
+<price>
+<from>Auckland, New Zealand</from>
+<to>Wellington, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>100.0</weightcost>
+<volumecost>100.0</volumecost>
+</price>
+
+<price>
+<from>Wellington, New Zealand</from>
+<to>Auckland, New Zealand</to>
+<priority>Domestic Air</priority>
+<weightcost>100.0</weightcost>
+<volumecost>100.0</volumecost>
+</price>
+
+<price>
+<from>Wellington, New Zealand</from>
+<to>Auckland, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>100.0</weightcost>
+<volumecost>100.0</volumecost>
+</price>
 
 </log>
