@@ -3,11 +3,13 @@ package kps;
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import cucumber.api.PendingException;
 import cucumber.api.java.en.And;
+import cucumber.api.java.en.But;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import kps.server.*;
 import kps.server.logs.MailDelivery;
 import kps.util.MailPriority;
+import kps.util.RouteNotFoundException;
 import kps.util.RouteType;
 import org.junit.Assert;
 
@@ -30,6 +32,9 @@ public class PrioritySteps {
 	String toCountry;
 	MailPriority priorityType;
 	double cost;
+
+	MailDelivery air;
+	MailDelivery standard;
 
 	@Given("^an initial priority map$")
 	public void anInitialPriorityMap() throws Throwable {
@@ -142,15 +147,129 @@ public class PrioritySteps {
 
 		double domesticStandardCost = server.getTransportMap().getCustomerPrice(domesticStandard);
 		double domesticAirCost = server.getTransportMap().getCustomerPrice(domesticAir);
-		System.out.println(domesticAirCost);
-		System.out.println(domesticStandardCost);
+
 		// Customer route must not exist
 		if (domesticStandardCost == -1 || domesticAirCost == -1) {
-			Assert.fail("Your data file must not have <price> entries for this path");
+			Assert.fail("Your data file must not have direct <price> entries for this path");
 		}
 		else {
 			Assert.assertTrue("The price a customer is being charged is not the same", domesticStandardCost == domesticAirCost);
 		}
 
+	}
+
+	@Then("^sending by air should cost more for the customer than standard$")
+	public void sendingByAirShouldCostMoreForTheCustomerThanStandard() throws Throwable {
+		double standardCost = server.getTransportMap().getCustomerPrice(standard);
+		double airCost = server.getTransportMap().getCustomerPrice(air);
+
+		String msg = "The cost of sending by air should've been more than standard. Air Cost: " + airCost + " Standard (land/sea) cost: " + standardCost;
+		Assert.assertTrue(msg, airCost > standardCost);
+	}
+
+	@Given("^a direct customer cost route exists for both priority types$")
+	public void aDirectCustomerCostRouteExistsForBothPriorityTypes() throws Throwable {
+		Destination to = new Destination(toCity, toCountry);
+		Destination from = new Destination(fromCity, fromCountry);
+
+		MailDelivery domesticStandard = new MailDelivery(from, to, weight, measure, MailPriority.DOMESTIC_STANDARD, DayOfWeek.MONDAY);
+		MailDelivery domesticAir = new MailDelivery(from, to, weight, measure, MailPriority.DOMESTIC_AIR, DayOfWeek.MONDAY);
+
+		double domesticStandardCost = server.getTransportMap().getCustomerPrice(domesticStandard);
+		double domesticAirCost = server.getTransportMap().getCustomerPrice(domesticAir);
+
+		if (domesticStandardCost == -1 || domesticAirCost == -1) {
+			Assert.fail("Your data file must not have direct <price> entries for this path with both air and standard types");
+		}
+	}
+
+	@And("^I send the priority parcel by \"([^\"]*)\" air and \"([^\"]*)\" standard\"$")
+	public void iSendThePriorityParcelByAirAndStandard(String domesticOrIntl, String domesticOrIntlSame) throws Throwable {
+		Destination to = new Destination(toCity, toCountry);
+		Destination from = new Destination(fromCity, fromCountry);
+
+		MailPriority air = MailPriority.fromString(domesticOrIntl + " air");
+		MailPriority standard = MailPriority.fromString(domesticOrIntl + " standard");
+
+		this.standard = new MailDelivery(from, to, weight, measure, standard, DayOfWeek.MONDAY);
+		this.air = new MailDelivery(from, to, weight, measure, air, DayOfWeek.MONDAY);
+	}
+
+	@Given("^the parcel is being sent from \"([^\"]*)\"$")
+	public void theParcelIsBeingSentFrom(String country) throws Throwable {
+		Assert.assertTrue("Parcel is not being sent from New Zealand", this.fromCountry.equalsIgnoreCase(country));
+	}
+
+	@But("^all my routes overseas must be done by \"([^\"]*)\"$")
+	public void allMyRoutesOverseasMustBeDoneByAir(String arg0) {
+		Destination to = new Destination(toCity, toCountry);
+		Destination from = new Destination(fromCity, fromCountry);
+		Mail mail = new Mail(to, from, priorityType, weight, measure);
+
+		try {
+			List<TransportRoute> routes = server.getTransportMap().calculateRoute(mail);
+
+			boolean allAirOverseas = true;
+			for (TransportRoute route : routes) {
+				// If it's an overseas route, it must be by air
+				if (!route.getTo().country.equalsIgnoreCase("New Zealand")) {
+					if (route.getType() != RouteType.AIR) {
+						allAirOverseas = false;
+						break;
+					}
+				}
+			}
+			Assert.assertTrue("Part of the route overseas is not by air", allAirOverseas);
+		}
+		catch (RouteNotFoundException e) {
+			String msg = "Part of your route in NZ must not be by Air";
+			Assert.fail(msg);
+		}
+	}
+
+
+	@Then("^all my routes domestically can be done by air, sea or land$")
+	public void allMyRoutesDomesticallyCanBeDoneByAirSeaOrLand() throws Throwable {
+		// Syntactic sugar, no point in testing as Land, Air or Sea are our only options in this implementation.
+		Destination to = new Destination(toCity, toCountry);
+		Destination from = new Destination(fromCity, fromCountry);
+		Mail mail = new Mail(to, from, priorityType, weight, measure);
+
+		// Currently unless all routes are by air for this test, this will throw an error
+		try {
+			server.getTransportMap().calculateRoute(mail);
+		}
+		catch (RouteNotFoundException e) {
+			Assert.fail("In this current implementation, international air cannot be sent between distribution centres domestically via land or sea before sending overseas. Hence, failing");
+		}
+	}
+
+
+	@But("^all my routes domestically must be done by \"([^\"]*)\"$")
+	public void allMyRoutesDomesticallyMustBeDoneBy(String arg0) throws Throwable {
+		Destination to = new Destination(toCity, toCountry);
+		Destination from = new Destination(fromCity, fromCountry);
+		Mail mail = new Mail(to, from, priorityType, weight, measure);
+
+		try {
+			List<TransportRoute> routes = server.getTransportMap().calculateRoute(mail);
+
+			boolean allAirDomestic = true;
+			for (TransportRoute route : routes) {
+				// If it's an domestic route, it must be by air
+				if (route.getTo().country.equalsIgnoreCase("New Zealand")) {
+					if (route.getType() != RouteType.AIR) {
+						allAirDomestic = false;
+						break;
+					}
+				}
+			}
+			Assert.assertTrue("Part of the route domestically is not by air", allAirDomestic);
+		}
+		catch (RouteNotFoundException e) {
+			// This throws on current implementation as mixed domestic aren't allowed for international air
+			String msg = "Part of your route in NZ must not be by Air";
+			Assert.fail(msg);
+		}
 	}
 }
