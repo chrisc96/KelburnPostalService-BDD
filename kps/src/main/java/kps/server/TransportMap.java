@@ -48,7 +48,7 @@ public class TransportMap {
 	public boolean apply(TransportCostUpdate u){
 		// find matching transportRoute if exists
 		TransportRoute newRoute = new TransportRoute(u.destination, u.origin, u.type, u.newWeightToCost, u.newVolumeToCost,
-				u.maxWeight, u.maxVolume, u.duration, u.frequency, u.day, new TransportFirm(u.firmName));;
+				u.maxWeight, u.maxVolume, u.duration, u.frequency, u.day, new TransportFirm(u.firmName));
 		TransportRoute toRemove = getTransportRoute(u);
 		// add new route
 		transportRoutes.add(newRoute);

@@ -6,6 +6,7 @@ import cucumber.api.java.en.Then;
 import kps.server.*;
 import kps.util.MailPriority;
 import kps.util.RouteNotFoundException;
+import kps.util.RouteType;
 import org.junit.Assert;
 
 import java.util.ArrayList;
@@ -78,11 +79,16 @@ public class MailSteps {
     }
 
     @Given("^a route exists for this mail$")
-    public void thisRouteExists() throws Throwable {
+    public void thisRouteExists() {
         Destination to = new Destination(toCity, toCountry);
         Destination from = new Destination(fromCity, fromCountry);
         Mail mail = new Mail(to, from, priorityType, weight, measure);
-        Assert.assertTrue("This route does not exist", server.getTransportMap().calculateRoute(mail).size() != 0);
+        try {
+            Assert.assertTrue("This route does not exist", server.getTransportMap().calculateRoute(mail).size() != 0);
+        }
+        catch (RouteNotFoundException e) {
+            Assert.fail("This route does not exist");
+        }
     }
 
     @Then("^as part of this route I stop off in \"([^\"]*)\" \"([^\"]*)\"$")
@@ -171,5 +177,70 @@ public class MailSteps {
         else if (citiesInsideCountry.size() == 0) {
             Assert.fail("You can't send a parcel to this country at all.");
         }
+    }
+
+    @Given("^the mailing route returned is \"([^\"]*)\"$")
+    public void theMailingRouteReturnedIs(String priority) throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+        Mail mail = new Mail(to, from, priorityType, weight, measure);
+
+        // Null means land or sea. Otherwise it means air.
+        RouteType typeToExpect = null;
+        MailPriority type = MailPriority.fromString(priority);
+        if (type == MailPriority.DOMESTIC_AIR || type == MailPriority.INTERNATIONAL_AIR) {
+            typeToExpect = RouteType.AIR;
+        }
+
+        // We assume that the route to use is the one at the front of the list
+        List<TransportRoute> routes = server.getTransportMap().calculateRoute(mail);
+        TransportRoute route = routes.get(0);
+
+        // Land or Sea
+        if (route.getType() == RouteType.AIR) {
+            if (typeToExpect == null) {
+                Assert.fail("You specified to send by Land or Sea (Standard) but the route returned by the domain was by " + route.getType().toString().toLowerCase());
+            }
+        }
+        // Air
+        else if (route.getType() == RouteType.LAND || route.getType() == RouteType.SEA) {
+            if (typeToExpect == RouteType.AIR) {
+                Assert.fail("You specified to send by Air but the route returned by the domain was by " + route.getType().toString().toLowerCase());
+            }
+        }
+    }
+
+    @Then("^the expected cost should be one of \\$\"([^\"]*)\"$")
+    public void theExpectedCostShouldBeOneOf$(String csvOfCosts) throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+        Mail mail = new Mail(to, from, priorityType, weight, measure);
+
+        TransportRoute route = server.getTransportMap().calculateRoute(mail).get(0);
+
+        double actual = route.calculateCost(mail.weight, mail.volume);
+
+        List<Double> expectedCosts = new ArrayList<>();
+        for (String str: csvOfCosts.split(",")) {
+            try {
+                expectedCosts.add(Double.parseDouble(str));
+            }
+            catch (NumberFormatException e) {}
+        }
+
+        boolean found = false;
+        for (Double expected: expectedCosts) {
+            if (actual == expected) {
+                found = true;
+            }
+        }
+        if (!found) {
+            Assert.fail("The actual cost returned was " + actual + ". The expected costs were: " + expectedCosts.toString());
+        }
+    }
+
+    @Given("^the mail is being sent from \"([^\"]*)\"$")
+    public void theMailIsBeingSentFrom(String country) throws Throwable {
+            Assert.assertTrue("Parcel is not being sent from New Zealand", this.fromCountry.equalsIgnoreCase(country));
     }
 }
