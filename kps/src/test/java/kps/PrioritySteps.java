@@ -121,42 +121,6 @@ public class PrioritySteps {
 		Assert.assertTrue("Air is the only option..", notJustAir);
 	}
 
-	@Then("^this costs the customer \\$(\\d+)")
-	public void thisCostsTheCustomer(int cost) {
-		Destination to = new Destination(toCity, toCountry);
-		Destination from = new Destination(fromCity, fromCountry);
-
-		MailDelivery delivery = new MailDelivery(from, to, weight, measure, priorityType, DayOfWeek.MONDAY);
-
-		System.out.println(server.getTransportMap().getCustomerPrice(delivery));
-	}
-
-
-	@And("^I send the priority parcel by domestic air and domestic standard\"$")
-	public void iSendThePriorityParcelByDomesticAirAndDomesticStandard() {
-		// No point doing anything, syntactic sugar
-	}
-
-	@Then("^sending by domestic air and domestic standard costs the same price for the customer$")
-	public void sendingByDomesticAirAndDomesticStandardCostsTheSamePriceForTheCustomer() throws Throwable {
-		Destination to = new Destination(toCity, toCountry);
-		Destination from = new Destination(fromCity, fromCountry);
-
-		MailDelivery domesticStandard = new MailDelivery(from, to, weight, measure, MailPriority.DOMESTIC_STANDARD, DayOfWeek.MONDAY);
-		MailDelivery domesticAir = new MailDelivery(from, to, weight, measure, MailPriority.DOMESTIC_AIR, DayOfWeek.MONDAY);
-
-		double domesticStandardCost = server.getTransportMap().getCustomerPrice(domesticStandard);
-		double domesticAirCost = server.getTransportMap().getCustomerPrice(domesticAir);
-
-		// Customer route must not exist
-		if (domesticStandardCost == -1 || domesticAirCost == -1) {
-			Assert.fail("Your data file must not have direct <price> entries for this path");
-		}
-		else {
-			Assert.assertTrue("The price a customer is being charged is not the same", domesticStandardCost == domesticAirCost);
-		}
-
-	}
 
 	@Then("^sending by air should cost more for the customer than standard$")
 	public void sendingByAirShouldCostMoreForTheCustomerThanStandard() throws Throwable {
@@ -271,5 +235,18 @@ public class PrioritySteps {
 			String msg = "Part of your route in NZ must not be by Air";
 			Assert.fail(msg);
 		}
+	}
+
+	@Then("^this costs the customer \\$(\\d+)")
+	public void thisCostsTheCustomer(int cost) {
+		Destination to = new Destination(toCity, toCountry);
+		Destination from = new Destination(fromCity, fromCountry);
+
+		MailDelivery delivery = new MailDelivery(from, to, weight, measure, priorityType, DayOfWeek.MONDAY);
+
+		double actual = server.getTransportMap().getCustomerPrice(delivery);
+
+		String msg = (actual == -1) ? "There is no customer price for this route" : "The actual cost was" + actual + " but the expected cost was $" + cost;
+		Assert.assertTrue(msg, cost == actual);
 	}
 }

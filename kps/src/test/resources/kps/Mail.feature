@@ -61,9 +61,6 @@ Feature: Mail Delivery Costs for KPS
       | Martin Island  |
       | Canada         |
 
-  Scenario Outline: Test sending mail to destinations where there is no method of transport
-  # KPS does not accept mail for destinations if there is no chain of transport routes to that destination (unreachable, non-existent etc)
-
 
   #
   #
