@@ -243,4 +243,35 @@ public class MailSteps {
     public void theMailIsBeingSentFrom(String country) throws Throwable {
             Assert.assertTrue("Parcel is not being sent from New Zealand", this.fromCountry.equalsIgnoreCase(country));
     }
+
+    @Then("^a route shouldn't exist for this mail$")
+    public void aRouteShouldnTExistForThisMail() throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+        Mail mail = new Mail(to, from, priorityType, weight, measure);
+
+        boolean routeDoesntExist = false;
+        List<TransportRoute> route = null;
+        try {
+            routeDoesntExist = (route = server.getTransportMap().calculateRoute(mail)).size() == 0;
+        }
+        catch (NullPointerException | RouteNotFoundException e) {
+            routeDoesntExist = true;
+        }
+        finally {
+            // If a route was returned
+            if (route != null) {
+                StringBuilder msg = new StringBuilder();
+                if (weight > route.get(0).maxWeight) {
+                    msg.append("We are overweight but the domain didn't care. It accepted the mail.\n");
+                }
+                if (measure > route.get(0).maxVolume) {
+                    msg.append("We are oversized but the domain didn't care. It accepted the mail.\n");
+                }
+                System.out.println(msg.toString());
+            }
+            String msg = "This route from " + fromCity + " to " + toCity + " doesn't exist";
+            Assert.assertFalse(msg, routeDoesntExist);
+        }
+    }
 }

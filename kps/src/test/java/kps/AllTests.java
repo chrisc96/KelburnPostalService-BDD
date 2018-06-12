@@ -1,4 +1,4 @@
-package kps.tests;
+package kps;
 
 import org.junit.runners.Suite;
 
