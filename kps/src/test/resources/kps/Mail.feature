@@ -80,7 +80,7 @@ Feature: Test Mail Delivery Costs for KPS
     Given an initial map
     Given a parcel that weighs 0kg
     Given a parcel that measures 0 cc
-    And I send the parcel from "Wellington" "New Zealand"
+    And I send the parcel from "Wellington" "New Zedwdaland"
     And I send the parcel to "Palmerston North" "New Zealand"
     And I send the parcel by "domestic standard"
     Then the cost is $0
@@ -94,6 +94,21 @@ Feature: Test Mail Delivery Costs for KPS
     And I send the parcel to "Palmerston North" "New Zealand"
     And I send the parcel by "domestic standard"
     Then the cost is $5
+
+
+  Scenario Outline: Send really heavy mail (that shouldn't be accepted)
+    Given an initial map
+    Given a parcel that weighs <Weight>kg
+    Given a parcel that measures <Measurement> cc
+    And I send the parcel from "Wellington" "New Zealand"
+    And I send the parcel to "Palmerston North" "New Zealand"
+    And I send the parcel by "domestic standard"
+    Then a route shouldn't exist for this mail
+    Examples:
+      | Weight | Measurement |
+      | 500    | 40000       |
+      | 40     | 250000      |
+      | 500    | 600000      |
 
   Scenario Outline: Send mail (domestic & overseas) with direct transport routes (No hops)
     #

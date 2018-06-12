@@ -382,8 +382,8 @@
 <to>Place, Martin Island</to>
 <company>Inter-Landmasses</company>
 <type>Sea</type>
-<weightcost>8.0</weightcost>
-<volumecost>8.0</volumecost>
+<weightcost>15.0</weightcost>
+<volumecost>15.0</volumecost>
 <maxWeight>200.0</maxWeight>
 <maxVolume>200.0</maxVolume>
 <day>MONDAY</day>
@@ -395,8 +395,8 @@
 <to>Auckland, New Zealand</to>
 <company>Inter-Landmasses</company>
 <type>Sea</type>
-<weightcost>8.0</weightcost>
-<volumecost>8.0</volumecost>
+<weightcost>15.0</weightcost>
+<volumecost>15.0</volumecost>
 <maxWeight>200.0</maxWeight>
 <maxVolume>200.0</maxVolume>
 <day>MONDAY</day>
@@ -586,6 +586,19 @@
 <duration>24.0</duration>
 </cost>
 <cost>
+<from>Auckland, New Zealand</from>
+<to>Place, Martin Island</to>
+<company>Super Airlines</company>
+<type>Air</type>
+<weightcost>35.0</weightcost>
+<volumecost>35.0</volumecost>
+<maxWeight>200.0</maxWeight>
+<maxVolume>200.0</maxVolume>
+<day>MONDAY</day>
+<frequency>36.0</frequency>
+<duration>24.0</duration>
+</cost>
+<cost>
 <from>Sydney, Australia</from>
 <to>Auckland, New Zealand</to>
 <company>Kelburn Airways</company>
@@ -715,4 +728,88 @@
 <frequency>36.0</frequency>
 <duration>24.0</duration>
 </cost>
+<price>
+<from>Wellington, New Zealand</from>
+<to>Dunedin, New Zealand</to>
+<priority>Domestic Air</priority>
+<weightcost>15.0</weightcost>
+<volumecost>15.0</volumecost>
+</price>
+<price>
+<from>Wellington, New Zealand</from>
+<to>Dunedin, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>5.0</weightcost>
+<volumecost>5.0</volumecost>
+</price>
+<price>
+<from>Dunedin, New Zealand</from>
+<to>Wellington, New Zealand</to>
+<priority>Domestic Air</priority>
+<weightcost>15.0</weightcost>
+<volumecost>15.0</volumecost>
+</price>
+<price>
+<from>Dunedin, New Zealand</from>
+<to>Wellington, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>5.0</weightcost>
+<volumecost>5.0</volumecost>
+</price>
+<price>
+<from>Auckland, New Zealand</from>
+<to>Wellington, New Zealand</to>
+<priority>Domestic Air</priority>
+<weightcost>15.0</weightcost>
+<volumecost>15.0</volumecost>
+</price>
+<price>
+<from>Auckland, New Zealand</from>
+<to>Wellington, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>5.0</weightcost>
+<volumecost>5.0</volumecost>
+</price>
+<price>
+<from>Wellington, New Zealand</from>
+<to>Auckland, New Zealand</to>
+<priority>Domestic Air</priority>
+<weightcost>15.0</weightcost>
+<volumecost>15.0</volumecost>
+</price>
+<price>
+<from>Wellington, New Zealand</from>
+<to>Auckland, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>5.0</weightcost>
+<volumecost>5.0</volumecost>
+</price>
+<price>
+<from>Nelson, New Zealand</from>
+<to>Wellington, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>5.0</weightcost>
+<volumecost>5.0</volumecost>
+</price>
+<price>
+<from>Invercargill, New Zealand</from>
+<to>Auckland, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>5.0</weightcost>
+<volumecost>5.0</volumecost>
+</price>
+<price>
+<from>Auckland, New Zealand</from>
+<to>Napier, New Zealand</to>
+<priority>Domestic Standard</priority>
+<weightcost>5.0</weightcost>
+<volumecost>5.0</volumecost>
+</price>
+<price>
+<from>Auckland, New Zealand</from>
+<to>Singapore City, Singapore</to>
+<priority>International Air</priority>
+<weightcost>30.0</weightcost>
+<volumecost>30.0</volumecost>
+</price>
 </document>
