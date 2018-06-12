@@ -1,4 +1,4 @@
-package kps;
+package kps.stepdefinitions;
 
 import cucumber.api.PendingException;
 import cucumber.api.java.en.And;
@@ -33,10 +33,9 @@ public class CustomerPriceSteps {
     String toCity;
     String toCountry;
     MailPriority priorityType;
-    double cost;
 
-    MailDelivery air;
     MailDelivery standard;
+    MailDelivery air;
 
     @Given("^an initial customer map$")
     public void anInitialCustomerMap() throws Throwable {
@@ -122,10 +121,47 @@ public class CustomerPriceSteps {
 
         // Customer route must not exist
         if (domesticStandardCost == -1) {
-            Assert.fail("There is no domestic standard transport method for this route");
+            Assert.fail("There is no direct domestic standard transport method for this route");
         }
         if (domesticAirCost == -1) {
-            Assert.fail("There is no domestic air transport method for this route");
+            Assert.fail("There is no direct domestic air transport method for this route");
         }
+    }
+
+    @Given("^a direct customer cost route exists for both priority types$")
+    public void aDirectCustomerCostRouteExistsForBothPriorityTypes() throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+
+        MailDelivery domesticStandard = new MailDelivery(from, to, weight, measure, MailPriority.DOMESTIC_STANDARD, DayOfWeek.MONDAY);
+        MailDelivery domesticAir = new MailDelivery(from, to, weight, measure, MailPriority.DOMESTIC_AIR, DayOfWeek.MONDAY);
+
+        double domesticStandardCost = server.getTransportMap().getCustomerPrice(domesticStandard);
+        double domesticAirCost = server.getTransportMap().getCustomerPrice(domesticAir);
+
+        if (domesticStandardCost == -1 || domesticAirCost == -1) {
+            Assert.fail("Your data file must not have direct <price> entries for this path with both air and standard types");
+        }
+    }
+
+    @And("^I send the priority parcel by \"([^\"]*)\" air and \"([^\"]*)\" standard\"$")
+    public void iSendThePriorityParcelByAirAndStandard(String domesticOrIntl, String domesticOrIntlSame) throws Throwable {
+        Destination to = new Destination(toCity, toCountry);
+        Destination from = new Destination(fromCity, fromCountry);
+
+        MailPriority air = MailPriority.fromString(domesticOrIntl + " air");
+        MailPriority standard = MailPriority.fromString(domesticOrIntl + " standard");
+
+        this.standard = new MailDelivery(from, to, weight, measure, standard, DayOfWeek.MONDAY);
+        this.air = new MailDelivery(from, to, weight, measure, air, DayOfWeek.MONDAY);
+    }
+
+    @Then("^sending by air should cost more for the customer than standard$")
+    public void sendingByAirShouldCostMoreForTheCustomerThanStandard() throws Throwable {
+        double standardCost = server.getTransportMap().getCustomerPrice(standard);
+        double airCost = server.getTransportMap().getCustomerPrice(air);
+
+        String msg = "The cost of sending by air should've been more than standard. Air Cost: " + airCost + " Standard (land/sea) cost: " + standardCost;
+        Assert.assertTrue(msg, airCost > standardCost);
     }
 }

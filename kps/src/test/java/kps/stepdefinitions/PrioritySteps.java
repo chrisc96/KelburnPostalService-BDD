@@ -1,4 +1,4 @@
-package kps;
+package kps.stepdefinitions;
 
 import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
 import cucumber.api.PendingException;
@@ -32,9 +32,6 @@ public class PrioritySteps {
 	String toCountry;
 	MailPriority priorityType;
 	double cost;
-
-	MailDelivery air;
-	MailDelivery standard;
 
 	@Given("^an initial priority map$")
 	public void anInitialPriorityMap() throws Throwable {
@@ -118,45 +115,7 @@ public class PrioritySteps {
 				break;
 			}
 		}
-		Assert.assertTrue("Air is the only option..", notJustAir);
-	}
-
-
-	@Then("^sending by air should cost more for the customer than standard$")
-	public void sendingByAirShouldCostMoreForTheCustomerThanStandard() throws Throwable {
-		double standardCost = server.getTransportMap().getCustomerPrice(standard);
-		double airCost = server.getTransportMap().getCustomerPrice(air);
-
-		String msg = "The cost of sending by air should've been more than standard. Air Cost: " + airCost + " Standard (land/sea) cost: " + standardCost;
-		Assert.assertTrue(msg, airCost > standardCost);
-	}
-
-	@Given("^a direct customer cost route exists for both priority types$")
-	public void aDirectCustomerCostRouteExistsForBothPriorityTypes() throws Throwable {
-		Destination to = new Destination(toCity, toCountry);
-		Destination from = new Destination(fromCity, fromCountry);
-
-		MailDelivery domesticStandard = new MailDelivery(from, to, weight, measure, MailPriority.DOMESTIC_STANDARD, DayOfWeek.MONDAY);
-		MailDelivery domesticAir = new MailDelivery(from, to, weight, measure, MailPriority.DOMESTIC_AIR, DayOfWeek.MONDAY);
-
-		double domesticStandardCost = server.getTransportMap().getCustomerPrice(domesticStandard);
-		double domesticAirCost = server.getTransportMap().getCustomerPrice(domesticAir);
-
-		if (domesticStandardCost == -1 || domesticAirCost == -1) {
-			Assert.fail("Your data file must not have direct <price> entries for this path with both air and standard types");
-		}
-	}
-
-	@And("^I send the priority parcel by \"([^\"]*)\" air and \"([^\"]*)\" standard\"$")
-	public void iSendThePriorityParcelByAirAndStandard(String domesticOrIntl, String domesticOrIntlSame) throws Throwable {
-		Destination to = new Destination(toCity, toCountry);
-		Destination from = new Destination(fromCity, fromCountry);
-
-		MailPriority air = MailPriority.fromString(domesticOrIntl + " air");
-		MailPriority standard = MailPriority.fromString(domesticOrIntl + " standard");
-
-		this.standard = new MailDelivery(from, to, weight, measure, standard, DayOfWeek.MONDAY);
-		this.air = new MailDelivery(from, to, weight, measure, air, DayOfWeek.MONDAY);
+		Assert.assertTrue("Air is the only option. Potential domain problem.", notJustAir);
 	}
 
 	@Given("^the parcel is being sent from \"([^\"]*)\"$")

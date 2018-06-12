@@ -409,8 +409,8 @@
 <to>Place, Martin Island</to>
 <from>Auckland, New Zealand</from>
 <type>Sea</type>
-<weightcost>8</weightcost>
-<volumecost>8</volumecost>
+<weightcost>15</weightcost>
+<volumecost>15</volumecost>
 <maxWeight>200</maxWeight>
 <maxVolume>200</maxVolume>
 <duration>24</duration>
@@ -423,8 +423,8 @@
 <to>Auckland, New Zealand</to>
 <from>Place, Martin Island</from>
 <type>Sea</type>
-<weightcost>8</weightcost>
-<volumecost>8</volumecost>
+<weightcost>15</weightcost>
+<volumecost>15</volumecost>
 <maxWeight>200</maxWeight>
 <maxVolume>200</maxVolume>
 <duration>24</duration>
@@ -868,4 +868,13 @@
 <weightcost>5.0</weightcost>
 <volumecost>5.0</volumecost>
 </price>
+
+<price>
+<from>Auckland, New Zealand</from>
+<to>Singapore City, Singapore</to>
+<priority>International Air</priority>
+<weightcost>30.0</weightcost>
+<volumecost>30.0</volumecost>
+</price>
+
 </log>

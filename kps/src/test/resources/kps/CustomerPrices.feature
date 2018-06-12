@@ -58,7 +58,7 @@ Feature: Customer Prices
   #
   #   The problem with this is if this is the case, then the above scenario cannot be correct. They contradict.
   #
-  Scenario Outline: Domestic air and domestic standard are the same price for the customer, route calculation is direct
+  Scenario Outline: Domestic air and domestic standard are the same, in terms of price charged to the customer, route calculation is direct
     # We don't have any examples given to us in the data.xml for this. I copied a few from the logs.xml file to the data.xml and made a couple more
     # to make the test a bit more substantive. Not sure if this is allowed or not but otherwise there's no way of testing this specification with
     # the data we were supplied with
@@ -76,17 +76,17 @@ Feature: Customer Prices
       |   5    |  1500       | Auckland  | New Zealand  | Wellington        | New Zealand |
 
 
-  Scenario Outline: Domestic air and domestic standard are the same price for the customer, route calculation has hops in between
+  Scenario Outline: Domestic air and domestic standard are the same, in terms of price charged to the customer, route calculation has hops in between
     # I added prices for Dunedin -> Wellington -> Auckland. This fails. I also added Auckland -> Wellington -> Dunedin and it didn't
     # like it either. Clearly the domain doesn't like determining pricing in concatenating hops
     # i.e it will only calculate direct trips (Dunedin -> Auckland) for the customer...
-    # This is more of an interesting functional domain note than specification checking...
-
-    Given an initial priority map
-    Given a priority parcel that weighs <Weight>kg
-    Given a priority parcel that measures <Measurement>cc
-    And I send the priority parcel from "<FromCity>" "<FromCountry>"
-    And I send the priority parcel to "<ToCity>" "<ToCountry>"
+    # This is more of an interesting functional domain note than specification checking... This probably won't ever work unless the
+    # 'enhanced kps' systems allow this functional ability.
+    Given an initial customer map
+    Given a customer parcel that weighs <Weight>kg
+    Given a customer parcel that measures <Measurement>cc
+    And I send the customer parcel from "<FromCity>" "<FromCountry>"
+    And I send the customer parcel to "<ToCity>" "<ToCountry>"
     Given the parcel is sent only within New Zealand
     Given domestic air and domestic standard routes both exist
     Then sending by domestic air and domestic standard costs the same price for the customer
@@ -96,23 +96,21 @@ Feature: Customer Prices
       |   5    |  1500       |  Auckland  | New Zealand | Dunedin           | New Zealand |
 
 
-
-
   #  To quote the specification:
   #  'Customers can specify a priority for their mail. The higher the priority, the more expensive it is for the customer'
   #
   #  This seems to contradict the above tests that I deciphered to mean that for domestic standard and domestic air, the price for the customer
   #  will be the same. However this is now saying that if we change the priority type then the price should be different
-  #  (given same volume, weight, origin and destination). This is ridiculous...
+  #  (given same volume, weight, origin and destination).
   #
   #  The specification doesn't specifically state which is higher, I'm going to work on the assumption that
   #  air > standard in terms of priority (as it is usually), but nowhere does it specify this.
   Scenario Outline: The price for the customer wanting to ship by air is greater than standard
-    Given an initial priority map
-    Given a priority parcel that weighs <Weight>kg
-    Given a priority parcel that measures <Measurement>cc
-    And I send the priority parcel from "<FromCity>" "<FromCountry>"
-    And I send the priority parcel to "<ToCity>" "<ToCountry>"
+    Given an initial customer map
+    Given a customer parcel that weighs <Weight>kg
+    Given a customer parcel that measures <Measurement>cc
+    And I send the customer parcel from "<FromCity>" "<FromCountry>"
+    And I send the customer parcel to "<ToCity>" "<ToCountry>"
     Given a direct customer cost route exists for both priority types
     Then I send the priority parcel by "<Type>" air and "<Type>" standard"
     Then sending by air should cost more for the customer than standard

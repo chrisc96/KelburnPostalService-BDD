@@ -1,14 +1,16 @@
-package kps;
+package kps.stepdefinitions;
 import cucumber.api.PendingException;
 import cucumber.api.java.en.And;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import kps.server.*;
+import kps.server.logs.MailDelivery;
 import kps.util.MailPriority;
 import kps.util.RouteNotFoundException;
 import kps.util.RouteType;
 import org.junit.Assert;
 
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,23 +70,24 @@ public class MailSteps {
     public void theCostIs$(double expectedCost) throws Throwable {
         Destination to = new Destination(toCity, toCountry);
         Destination from = new Destination(fromCity, fromCountry);
-        Mail mail = new Mail(to, from, priorityType, weight, measure);
+        MailDelivery mail = new MailDelivery(from, to, weight, measure, priorityType, DayOfWeek.MONDAY);
 
-        TransportRoute route = server.getTransportMap().calculateRoute(mail).get(0);
-
-        double actual = route.calculateCost(mail.weight, mail.volume);
+        double actual = server.getTransportMap().getTransportPrice(mail);
 
         String msg = "The expected cost was " + expectedCost + " but the actual cost was " + actual;
         Assert.assertTrue(msg, expectedCost == actual);
     }
 
-    @Given("^a route exists for this mail$")
-    public void thisRouteExists() {
+    @Given("^a direct route \\(no hops\\) exists for this mail$")
+    public void aDirectRouteWithNoHopsExists() {
         Destination to = new Destination(toCity, toCountry);
         Destination from = new Destination(fromCity, fromCountry);
         Mail mail = new Mail(to, from, priorityType, weight, measure);
         try {
             Assert.assertTrue("This route does not exist", server.getTransportMap().calculateRoute(mail).size() != 0);
+            if (server.getTransportMap().calculateRoute(mail).size() > 1) {
+                Assert.fail("This route has hops in between.");
+            }
         }
         catch (RouteNotFoundException e) {
             Assert.fail("This route does not exist");
@@ -179,8 +182,8 @@ public class MailSteps {
         }
     }
 
-    @Given("^the mailing route returned is \"([^\"]*)\"$")
-    public void theMailingRouteReturnedIs(String priority) throws Throwable {
+    @Given("^the mailing route returned is of type \"([^\"]*)\"$")
+    public void theMailingRouteReturnedAreOfType(String priority) throws Throwable {
         Destination to = new Destination(toCity, toCountry);
         Destination from = new Destination(fromCity, fromCountry);
         Mail mail = new Mail(to, from, priorityType, weight, measure);
@@ -192,20 +195,19 @@ public class MailSteps {
             typeToExpect = RouteType.AIR;
         }
 
-        // We assume that the route to use is the one at the front of the list
         List<TransportRoute> routes = server.getTransportMap().calculateRoute(mail);
         TransportRoute route = routes.get(0);
 
         // Land or Sea
         if (route.getType() == RouteType.AIR) {
             if (typeToExpect == null) {
-                Assert.fail("You specified to send by Land or Sea (Standard) but the route returned by the domain was by " + route.getType().toString().toLowerCase());
+                Assert.fail("You requested to send by Land or Sea (Standard) but the route returned by the domain was by " + route.getType().toString().toLowerCase() + ". Probably a domain error.");
             }
         }
         // Air
         else if (route.getType() == RouteType.LAND || route.getType() == RouteType.SEA) {
             if (typeToExpect == RouteType.AIR) {
-                Assert.fail("You specified to send by Air but the route returned by the domain was by " + route.getType().toString().toLowerCase());
+                Assert.fail("You requested to send by Air but the route returned by the domain was by " + route.getType().toString().toLowerCase() + ". Probably a domain error.");
             }
         }
     }
@@ -214,11 +216,9 @@ public class MailSteps {
     public void theExpectedCostShouldBeOneOf$(String csvOfCosts) throws Throwable {
         Destination to = new Destination(toCity, toCountry);
         Destination from = new Destination(fromCity, fromCountry);
-        Mail mail = new Mail(to, from, priorityType, weight, measure);
+        MailDelivery mail = new MailDelivery(from, to, weight, measure, priorityType, DayOfWeek.MONDAY);
 
-        TransportRoute route = server.getTransportMap().calculateRoute(mail).get(0);
-
-        double actual = route.calculateCost(mail.weight, mail.volume);
+        double actual = server.getTransportMap().getTransportPrice(mail);
 
         List<Double> expectedCosts = new ArrayList<>();
         for (String str: csvOfCosts.split(",")) {
